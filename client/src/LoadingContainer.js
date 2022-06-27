@@ -1,4 +1,3 @@
-import styled from 'styled-components';
 import React, { useState, useEffect } from 'react';
 import { getWeb3, getContracts } from './utils.js';
 import App from './App.js';
@@ -61,10 +60,5 @@ function LoadingContainer() {
         />
     );
 }
-
-const LoadingMessage = styled.div`
-  color: gray;
-  font-size: 14px;
-`
 
 export default LoadingContainer;
