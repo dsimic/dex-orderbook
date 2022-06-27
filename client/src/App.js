@@ -97,11 +97,13 @@ function App({ web3, accounts, contracts, initBlock }) {
   };
 
   const createMarketOrder = async (amount, side) => {
+    console.log(`Creating market order: amount=${amount}, side=${side}`);
     await contracts.dex.methods.createMarketOrder(web3.utils.fromAscii(
       user.selectedToken.ticker),
       amount,
       side
     ).send({ from: user.accounts[0] });
+    console.log(`Market order successfully submitted.`);
     const orders = await getOrders(user.selectedToken);
     setOrders(orders);
   };
