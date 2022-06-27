@@ -9,6 +9,8 @@ function LoadingContainer() {
     const [web3, setWeb3] = useState(undefined);
     const [accounts, setAccounts] = useState([]);
     const [contracts, setContracts] = useState(undefined);
+    const [startBlockNumber, setStartBlockNumber] = useState(0);
+
     useEffect(() => {
         const init = async () => {
             const web3 = await getWeb3();
@@ -17,9 +19,12 @@ function LoadingContainer() {
             console.log("got contracts", contracts)
             const accounts = await web3.eth.getAccounts();
             console.log("got accounts", accounts)
+            const startBlockNumber = await web3.eth.getBlockNumber();
+            console.log("got startBlockNumber", startBlockNumber)
             setWeb3(web3);
             setContracts(contracts);
             setAccounts(accounts);
+            setStartBlockNumber(startBlockNumber)
         };
         init();
     }, []);
@@ -28,6 +33,7 @@ function LoadingContainer() {
             typeof web3 !== 'undefined'
             && typeof contracts !== 'undefined'
             && accounts.length > 0
+            && startBlockNumber >= 0
         )
     };
     if (!isReady()) {
@@ -41,6 +47,7 @@ function LoadingContainer() {
             web3={web3}
             accounts={accounts}
             contracts={contracts}
+            initBlock={startBlockNumber}
         />
     );
 }

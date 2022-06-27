@@ -13,7 +13,7 @@ const SIDE = {
   SELL: 1,
 };
 
-function App({ web3, accounts, contracts }) {
+function App({ web3, accounts, contracts, initBlock }) {
   const [tokens, setTokens] = useState([]);
   const [user, setUser] = useState({
     accounts: [],
@@ -52,7 +52,7 @@ function App({ web3, accounts, contracts }) {
     setTrades([]);
     const listener = contracts.dex.events.NewTrade({
       filter: { ticker: web3.utils.fromAscii(token.ticker) },
-      fromBlock: 0x00,
+      fromBlock: Math.max(0, initBlock - 1000),
       // fromBlock: 'earliest',
     }).on('data', newTrade => {
       if (tradeIds.has(newTrade.returnValues.tradeId)) return;
