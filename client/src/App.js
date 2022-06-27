@@ -111,12 +111,14 @@ function App({ web3, accounts, contracts, initBlock }) {
     setOrders(orders);
   };
   const createLimitOrder = async (amount, price, side) => {
+    console.log("Creating limit order.")
     await contracts.dex.methods.createLimitOrder(web3.utils.fromAscii(
       user.selectedToken.ticker),
       amount,
       price,
       side
     ).send({ from: user.accounts[0] });
+    console.log("Limit order successfully submitted");
     const orders = await getOrders(user.selectedToken);
     setOrders(orders);
   };
