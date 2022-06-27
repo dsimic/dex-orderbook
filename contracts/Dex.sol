@@ -4,7 +4,6 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-uint256 constant tradeStorageSize = 10;
 
 contract Dex {
     enum Side {
@@ -49,6 +48,7 @@ contract Dex {
         uint256 price;
         uint256 date;
     }
+    uint256 constant tradeStorageSize = 10;
 
     mapping(bytes32 => Token) public tokens;
     bytes32[] public tokenList;
@@ -60,7 +60,7 @@ contract Dex {
     bytes32 constant DAI = bytes32("DAI");
     // Convenience variable -- allows front end to easily que last 100 trades without having to
     // query events from block "0" - not always easy, however adds storage costs and gas costs to trading.
-    mapping(bytes32 => Trade[tradeStorageSize]) recentTrades;
+    mapping(bytes32 => Trade[]) recentTrades;
 
     constructor() {
         admin = msg.sender;
@@ -69,7 +69,7 @@ contract Dex {
     function getRecentTrades(bytes32 ticker)
         external
         view
-        returns (Trade[tradeStorageSize] memory)
+        returns (Trade[] memory)
     {
         return recentTrades[ticker];
     }
@@ -175,16 +175,12 @@ contract Dex {
     }
 
     function _registerTrade(Trade memory trade) private {
-        if (nextTradeId > 0) {
-            for (uint256 i = tradeStorageSize - 1; i >= 1; i--) {
-                recentTrades[trade.ticker][i] = recentTrades[trade.ticker][
-                    i - 1
-                ];
+        recentTrades[trade.ticker].push(trade);
+        if (recentTrades[trade.ticker].length > tradeStorageSize) {
+            for (uint i=0; i < tradeStorageSize; i++) {
+                recentTrades[trade.ticker][i] = recentTrades[trade.ticker][i+1];
             }
-            recentTrades[trade.ticker][0] = trade;
-        } else {
-            // first trade
-            recentTrades[trade.ticker][0] = trade;
+            recentTrades[trade.ticker].pop();
         }
         emit NewTrade(
             trade.tradeId,
