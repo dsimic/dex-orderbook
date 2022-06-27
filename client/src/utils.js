@@ -37,7 +37,6 @@ const getWeb3 = () =>
 
 const getContracts = async web3 => {
   const networkId = await web3.eth.net.getId();
-  const deployedNetwork = Dex.networks[networkId];
   console.log("getContracts: creating dex")
   const dex = new web3.eth.Contract(
     Dex.abi,

@@ -60,18 +60,18 @@ contract Dex {
     bytes32 constant DAI = bytes32("DAI");
     // Convenience variable -- allows front end to easily que last 100 trades without having to
     // query events from block "0" - not always easy, however adds storage costs and gas costs to trading.
-    Trade[tradeStorageSize] recentTrades;
+    mapping(bytes32 => Trade[tradeStorageSize]) recentTrades;
 
     constructor() {
         admin = msg.sender;
     }
 
-    function getRecentTrades()
+    function getRecentTrades(bytes32 ticker)
         external
         view
         returns (Trade[tradeStorageSize] memory)
     {
-        return recentTrades;
+        return recentTrades[ticker];
     }
 
     function getOrders(bytes32 ticker, Side side)
@@ -176,11 +176,11 @@ contract Dex {
     function registerTrade(Trade memory trade) private {
         if (nextTradeId >= tradeStorageSize - 1) {
             for (uint256 i = 1; i < tradeStorageSize; i++) {
-                recentTrades[i - 1] = recentTrades[i];
+                recentTrades[trade.ticker][i - 1] = recentTrades[trade.ticker][i];
             }
-            recentTrades[tradeStorageSize - 1] = trade;
+            recentTrades[trade.ticker][tradeStorageSize - 1] = trade;
         } else {
-            recentTrades[nextTradeId] = trade;
+            recentTrades[trade.ticker][nextTradeId] = trade;
         }
         emit NewTrade(
             trade.tradeId,

@@ -46,9 +46,13 @@ function App({ web3, accounts, contracts, initBlock }) {
     return { buy: orders[0], sell: orders[1] }
   };
 
-  const listenToTrades = token => {
+  const listenToTrades = async token => {
     const tradeIds = new Set();
     const fromBlock = Math.max(0, initBlock - 100);
+    console.log("Getting recent trades")
+    const recentTrades = await contracts.dex.methods.getRecentTrades(web3.utils.fromAscii(token.ticker)).call();
+    console.log("Got recent trades", recentTrades)
+    setTrades(recentTrades);
     // const fromBlock = Math.max(0, initBlock);
     console.log("listening to trades fromBlock: ", fromBlock, " for token: ", token.ticker);
     setTrades([]);
