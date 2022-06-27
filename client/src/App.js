@@ -52,7 +52,8 @@ function App({ web3, accounts, contracts }) {
     setTrades([]);
     const listener = contracts.dex.events.NewTrade({
       filter: { ticker: web3.utils.fromAscii(token.ticker) },
-      fromBlock: 0,
+      fromBlock: 0x00,
+      // fromBlock: 'earliest',
     }).on('data', newTrade => {
       if (tradeIds.has(newTrade.returnValues.tradeId)) return;
       tradeIds.add(newTrade.returnValues.tradeId);
