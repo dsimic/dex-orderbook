@@ -99,32 +99,44 @@ async function main() {
     }
   }
   //create trades
+  console.log("Creating trades")
   await dex.connect(trader1).createLimitOrder(BAT, 1000, 10, SIDE.BUY);
+  await increaseTime(1);
   await dex.connect(trader2).createMarketOrder(BAT, 1000, SIDE.SELL);
   await increaseTime(1);
   await dex.connect(trader1).createLimitOrder(BAT, 1200, 11, SIDE.BUY);
+  await increaseTime(1);
   await dex.connect(trader2).createMarketOrder(BAT, 1200, SIDE.SELL);
   await increaseTime(1);
   await dex.connect(trader1).createLimitOrder(BAT, 1200, 15, SIDE.BUY);
+  await increaseTime(1);
   await dex.connect(trader2).createMarketOrder(BAT, 1200, SIDE.SELL);
   await increaseTime(1);
   await dex.connect(trader1).createLimitOrder(BAT, 1500, 14, SIDE.BUY);
+  await increaseTime(1);
   await dex.connect(trader2).createMarketOrder(BAT, 1500, SIDE.SELL);
   await increaseTime(1);
   await dex.connect(trader1).createLimitOrder(BAT, 2000, 12, SIDE.BUY);
+  await increaseTime(1);
   await dex.connect(trader2).createMarketOrder(BAT, 2000, SIDE.SELL);
 
+  /*
   await dex.connect(trader1).createLimitOrder(REP, 1000, 2, SIDE.BUY);
+  await increaseTime(1);
   await dex.connect(trader2).createMarketOrder(REP, 1000, SIDE.SELL);
   await increaseTime(1);
   await dex.connect(trader1).createLimitOrder(REP, 500, 4, SIDE.BUY);
+  await increaseTime(1);
   await dex.connect(trader2).createMarketOrder(REP, 500, SIDE.SELL);
   await increaseTime(1);
   await dex.connect(trader1).createLimitOrder(REP, 800, 2, SIDE.BUY);
+  await increaseTime(1);
   await dex.connect(trader2).createMarketOrder(REP, 800, SIDE.SELL);
   await increaseTime(1);
   await dex.connect(trader1).createLimitOrder(REP, 1200, 6, SIDE.BUY);
+  await increaseTime(1);
   await dex.connect(trader2).createMarketOrder(REP, 1200, SIDE.SELL);
+  */
 
   //create orders
   console.log("Creating limit orders")
