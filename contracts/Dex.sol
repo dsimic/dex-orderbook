@@ -211,11 +211,6 @@ contract Dex {
         uint256 i;
         uint256 remaining = amount;
 
-        if (orders[i].amount == 0) {
-            /// orders are empty then.
-            return;
-        }
-
         while (i < orders.length && remaining > 0) {
             uint256 available = orders[i].amount - orders[i].filled;
             uint256 matched = (remaining > available) ? available : remaining;
