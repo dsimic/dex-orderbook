@@ -53,7 +53,7 @@ function App({ web3, accounts, contracts, initBlock }) {
     const fromBlock = Math.max(0, initBlock - 100);
     console.log("Getting recent trades")
     let recentTrades = await contracts.dex.methods.getRecentTrades(web3.utils.fromAscii(token.ticker)).call();
-    recentTrades = recentTrades.filter(el => el.amount !== 0);
+    recentTrades = recentTrades.filter(el => el.amount !== 0).reverse();
     console.log("Got recent trades", recentTrades)
     setTrades(recentTrades);
     recentTrades.forEach(el => tradeIds.add(el.tradeId));
