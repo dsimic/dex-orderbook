@@ -1,7 +1,11 @@
+import styled from 'styled-components';
 import React, { useState, useEffect } from 'react';
 import { getWeb3, getContracts } from './utils.js';
 import App from './App.js';
 
+
+const networkName = process.env.REACT_APP_NETWORK;
+console.log("Running on network: ", networkName);
 
 
 function LoadingContainer() {
@@ -37,9 +41,15 @@ function LoadingContainer() {
         )
     };
     if (!isReady()) {
-        console.log(web3, contracts, accounts)
         return (
-            <div>Loading ....</div>
+            <div className="row align-items-center" style={{minHeight: "30vh"}}>
+                <div className="col-sm-12" style={{ textAlign: "center" }}>
+                    <div className="spinner-border text-primary" />
+                    <br></br>
+                    <br></br>
+                    <div>Connecting to your wallet... please ensure you are connected to the network {networkName}</div>
+                </div>
+            </div>
         )
     }
     return (
@@ -51,5 +61,10 @@ function LoadingContainer() {
         />
     );
 }
+
+const LoadingMessage = styled.div`
+  color: gray;
+  font-size: 14px;
+`
 
 export default LoadingContainer;

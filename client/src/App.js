@@ -30,6 +30,8 @@ function App({ web3, accounts, contracts, initBlock }) {
   const [trades, setTrades] = useState([]);
   const [listener, setListener] = useState(undefined);
 
+  const [toasts, setToasts] = useState([]);
+
 
   const getBalances = async (account, token) => {
     const tokenDex = await contracts.dex.methods.traderBalances(
@@ -50,12 +52,15 @@ function App({ web3, accounts, contracts, initBlock }) {
     const tradeIds = new Set();
     const fromBlock = Math.max(0, initBlock - 100);
     console.log("Getting recent trades")
-    const recentTrades = await contracts.dex.methods.getRecentTrades(web3.utils.fromAscii(token.ticker)).call();
+    let recentTrades = await contracts.dex.methods.getRecentTrades(web3.utils.fromAscii(token.ticker)).call();
+    recentTrades = recentTrades.filter(el => el.tradeId != 0);
     console.log("Got recent trades", recentTrades)
     setTrades(recentTrades);
+    recentTrades.forEach(el => tradeIds.add(el.tradeId));
+
     // const fromBlock = Math.max(0, initBlock);
     console.log("listening to trades fromBlock: ", fromBlock, " for token: ", token.ticker);
-    setTrades([]);
+    // setTrades([]);
     const listener = contracts.dex.events.NewTrade({
       filter: { ticker: web3.utils.fromAscii(token.ticker) },
       fromBlock: web3.utils.toHex(fromBlock),
@@ -64,7 +69,7 @@ function App({ web3, accounts, contracts, initBlock }) {
       console.log("Got newTrade:", newTrade);
       if (tradeIds.has(newTrade.returnValues.tradeId)) return;
       tradeIds.add(newTrade.returnValues.tradeId);
-      setTrades(trades => ([...trades, newTrade.returnValues]));
+      setTrades(trades => ([newTrade.returnValues, ...trades]));
     });
     setListener(listener);
   };
@@ -105,6 +110,7 @@ function App({ web3, accounts, contracts, initBlock }) {
 
   const createMarketOrder = async (amount, side) => {
     console.log(`Creating market order: amount=${amount}, side=${side}`);
+    // setToasts(toasts => ([... toasts, {msg: "Creating market order"}]));
     await contracts.dex.methods.createMarketOrder(web3.utils.fromAscii(
       user.selectedToken.ticker),
       amount,

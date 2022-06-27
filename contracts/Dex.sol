@@ -174,13 +174,16 @@ contract Dex {
     }
 
     function registerTrade(Trade memory trade) private {
-        if (nextTradeId >= tradeStorageSize - 1) {
-            for (uint256 i = 1; i < tradeStorageSize; i++) {
-                recentTrades[trade.ticker][i - 1] = recentTrades[trade.ticker][i];
+        if (nextTradeId > 0) {
+            for (uint256 i = tradeStorageSize - 1; i >= 1; i--) {
+                recentTrades[trade.ticker][i] = recentTrades[trade.ticker][
+                    i - 1
+                ];
             }
-            recentTrades[trade.ticker][tradeStorageSize - 1] = trade;
+            recentTrades[trade.ticker][0] = trade;
         } else {
-            recentTrades[trade.ticker][nextTradeId] = trade;
+            // first trade
+            recentTrades[trade.ticker][0] = trade;
         }
         emit NewTrade(
             trade.tradeId,

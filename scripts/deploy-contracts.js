@@ -90,9 +90,11 @@ async function main() {
 
   const increaseTime = async (seconds) => {
     if (["hardhat", "localhost"].includes(hre_network.name)) {
+      console.log("Increasing time via evm_increaseTime")
       await ethers.provider.send("evm_increaseTime", [seconds]);
       await ethers.provider.send("evm_mine");
     } else {   // we are probably in a mainnet or testnet where time is real.
+      console.log("Delay time in realtime.")
       await delay(seconds * 1000)
     }
   }
