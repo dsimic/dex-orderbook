@@ -89,22 +89,25 @@ async function main() {
       await delay(seconds * 1000)
     }
   }
+  const waitTx = false;
 
   const cMO = async (trader, ticker, amount, side) => {
     let tx = await dex.connect(trader).createMarketOrder(ticker, amount, side);
-    console.log("Got marketOrder tx", tx.hash)
-    console.log("Waiting for marketOrder tx")
+    console.log("Got marketOrder tx", tx.hash, ` for ${ticker}`)
     // if we don't wait, the market order might not have anything to get matched against;
-    await tx.wait();
-    await increaseTime(1);
+    if (waitTx) {
+      await tx.wait();
+      await increaseTime(1);
+    }
   }
   const cLO = async (trader, ticker, amount, price, side) => {
     let tx = await dex.connect(trader).createLimitOrder(ticker, amount, price, side);
-    console.log("Got limitOrder tx", tx.hash)
-    console.log("Waiting for limitOrder tx")
+    console.log("Got limitOrder tx", tx.hash, `for ${ticker}`)
     // if we don't wait, the market order might not have anything to get matched against;
-    await tx.wait();
-    await increaseTime(1);
+    if (waitTx) {
+      await tx.wait();
+      await increaseTime(1);
+    }
   }
   //create trades
   console.log("Creating trades")
