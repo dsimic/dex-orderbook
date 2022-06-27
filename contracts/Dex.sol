@@ -4,11 +4,24 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+uint256 constant tradeStorageSize = 100;
+
 contract Dex {
     enum Side {
         BUY,
         SELL
     }
+
+    event NewTrade(
+        uint256 tradeId,
+        uint256 orderId,
+        bytes32 indexed ticker,
+        address indexed trader1,
+        address indexed trader2,
+        uint256 amount,
+        uint256 price,
+        uint256 date
+    );
 
     struct Token {
         bytes32 ticker;
@@ -26,15 +39,6 @@ contract Dex {
         uint256 date;
     }
 
-    mapping(bytes32 => Token) public tokens;
-    bytes32[] public tokenList;
-    mapping(address => mapping(bytes32 => uint256)) public traderBalances;
-    mapping(bytes32 => mapping(uint256 => Order[])) public orderBook;
-    address public admin;
-    uint256 public nextOrderId;
-    uint256 public nextTradeId;
-    bytes32 constant DAI = bytes32("DAI");
-
     struct Trade {
         uint256 tradeId;
         uint256 orderId;
@@ -46,26 +50,27 @@ contract Dex {
         uint256 date;
     }
 
+    mapping(bytes32 => Token) public tokens;
+    bytes32[] public tokenList;
+    mapping(address => mapping(bytes32 => uint256)) public traderBalances;
+    mapping(bytes32 => mapping(uint256 => Order[])) public orderBook;
+    address public admin;
+    uint256 public nextOrderId;
+    uint256 public nextTradeId;
+    bytes32 constant DAI = bytes32("DAI");
     // Convenience variable -- allows front end to easily que last 100 trades without having to
     // query events from block "0" - not always easy, however adds storage costs and gas costs to trading.
-    Trade[100] recentTrades;
-
-    event NewTrade(
-        uint256 tradeId,
-        uint256 orderId,
-        bytes32 indexed ticker,
-        address indexed trader1,
-        address indexed trader2,
-        uint256 amount,
-        uint256 price,
-        uint256 date
-    );
+    Trade[tradeStorageSize] recentTrades;
 
     constructor() {
         admin = msg.sender;
     }
 
-    function getRecentTrades() external view returns (Trade[100] memory) {
+    function getRecentTrades()
+        external
+        view
+        returns (Trade[tradeStorageSize] memory)
+    {
         return recentTrades;
     }
 
@@ -169,11 +174,11 @@ contract Dex {
     }
 
     function registerTrade(Trade memory trade) private {
-        if (nextTradeId >= 99) {
-            for (uint256 i = 1; i < 100; i++) {
+        if (nextTradeId >= tradeStorageSize - 1) {
+            for (uint256 i = 1; i < tradeStorageSize; i++) {
                 recentTrades[i - 1] = recentTrades[i];
             }
-            recentTrades[99] = trade;
+            recentTrades[tradeStorageSize - 1] = trade;
         } else {
             recentTrades[nextTradeId] = trade;
         }
