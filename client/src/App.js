@@ -48,13 +48,13 @@ function App({ web3, accounts, contracts, initBlock }) {
 
   const listenToTrades = token => {
     const tradeIds = new Set();
-    // const fromBlock = Math.max(0, initBlock - 1000);
-    const fromBlock = Math.max(0, initBlock);
+    const fromBlock = Math.max(0, initBlock - 1000);
+    // const fromBlock = Math.max(0, initBlock);
     console.log("listening to trades fromBlock: ", fromBlock, " for token: ", token.ticker);
     setTrades([]);
     const listener = contracts.dex.events.NewTrade({
       filter: { ticker: web3.utils.fromAscii(token.ticker) },
-      fromBlock: fromBlock,
+      fromBlock: web3.utils.toHex(fromBlock),
       // fromBlock: 'earliest',
     }).on('data', newTrade => {
       if (tradeIds.has(newTrade.returnValues.tradeId)) return;
