@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-uint256 constant tradeStorageSize = 100;
+uint256 constant tradeStorageSize = 10;
 
 contract Dex {
     enum Side {
@@ -143,6 +143,7 @@ contract Dex {
                 "dai balance too low"
             );
         }
+        require(amount > 0, "amount must be non-zero");
         Order[] storage orders = orderBook[ticker][uint256(side)];
         orders.push(
             Order(
@@ -173,7 +174,7 @@ contract Dex {
         nextOrderId++;
     }
 
-    function registerTrade(Trade memory trade) private {
+    function _registerTrade(Trade memory trade) private {
         if (nextTradeId > 0) {
             for (uint256 i = tradeStorageSize - 1; i >= 1; i--) {
                 recentTrades[trade.ticker][i] = recentTrades[trade.ticker][
@@ -214,6 +215,11 @@ contract Dex {
         uint256 i;
         uint256 remaining = amount;
 
+        if (orders[i].amount == 0) {
+            /// orders are empty then.
+            return;
+        }
+
         while (i < orders.length && remaining > 0) {
             uint256 available = orders[i].amount - orders[i].filled;
             uint256 matched = (remaining > available) ? available : remaining;
@@ -229,7 +235,7 @@ contract Dex {
                 orders[i].price,
                 block.timestamp
             );
-            registerTrade(newTrade);
+            _registerTrade(newTrade);
             if (side == Side.SELL) {
                 traderBalances[msg.sender][ticker] =
                     traderBalances[msg.sender][ticker] -

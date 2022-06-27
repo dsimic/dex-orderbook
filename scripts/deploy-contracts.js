@@ -10,7 +10,7 @@ const SIDE = {
 const [DAI, BAT, REP, ZRX] = ['DAI', 'BAT', 'REP', 'ZRX'].map(el => ethers.utils.formatBytes32String(el));
 
 async function main() {
-  const [account, trader1, trader2, trader3, trader4] = await ethers.getSigners();
+  const [account, trader1, trader2, trader3] = await ethers.getSigners();
   console.log("Running on network: ", hre_network.name);
   const Dex = await ethers.getContractFactory("Dex");
   const Dai = await ethers.getContractFactory('Dai');
@@ -34,11 +34,7 @@ async function main() {
   console.log(`Success! Zrx contract deployed to: ${zrx.address}`);
   await dex.deployed();
   console.log(`Success! Dex contract deployed to: ${dex.address}`);
-  // await Promise.all(
-  //   [dai, bat, rep, zrx, dex].map((contract) => {
-  //     contract.deployed()
-  //   })
-  // )
+
   await dex.addToken(DAI, dai.address);
   console.log("Success! Added Dai");
   await dex.addToken(BAT, bat.address);
@@ -82,11 +78,6 @@ async function main() {
   await seedTokenBalance(rep, trader3);
   await seedTokenBalance(zrx, trader3);
 
-  console.log("Seed tokens for trader4");
-  await seedTokenBalance(dai, trader4);
-  await seedTokenBalance(bat, trader4);
-  await seedTokenBalance(rep, trader4);
-  await seedTokenBalance(zrx, trader4);
 
   const increaseTime = async (seconds) => {
     if (["hardhat", "localhost"].includes(hre_network.name)) {
@@ -98,71 +89,81 @@ async function main() {
       await delay(seconds * 1000)
     }
   }
+
+  const cMO = async (trader, ticker, amount, side) => {
+    let tx = await dex.connect(trader).createMarketOrder(ticker, amount, side);
+    console.log("Got marketOrder tx", tx.hash)
+    console.log("Waiting for marketOrder tx")
+    // if we don't wait, the market order might not have anything to get matched against;
+    await tx.wait();
+    await increaseTime(1);
+  }
+  const cLO = async (trader, ticker, amount, price, side) => {
+    let tx = await dex.connect(trader).createLimitOrder(ticker, amount, price, side);
+    console.log("Got limitOrder tx", tx.hash)
+    console.log("Waiting for limitOrder tx")
+    // if we don't wait, the market order might not have anything to get matched against;
+    await tx.wait();
+    await increaseTime(1);
+  }
   //create trades
   console.log("Creating trades")
-  await dex.connect(trader1).createLimitOrder(BAT, 1000, 10, SIDE.BUY);
-  await increaseTime(1);
-  await dex.connect(trader2).createMarketOrder(BAT, 1000, SIDE.SELL);
-  await increaseTime(1);
-  await dex.connect(trader1).createLimitOrder(BAT, 1200, 11, SIDE.BUY);
-  await increaseTime(1);
-  await dex.connect(trader2).createMarketOrder(BAT, 1200, SIDE.SELL);
-  await increaseTime(1);
-  await dex.connect(trader1).createLimitOrder(BAT, 1200, 15, SIDE.BUY);
-  await increaseTime(1);
-  await dex.connect(trader2).createMarketOrder(BAT, 1200, SIDE.SELL);
-  await increaseTime(1);
-  await dex.connect(trader1).createLimitOrder(BAT, 1500, 14, SIDE.BUY);
-  await increaseTime(1);
-  await dex.connect(trader2).createMarketOrder(BAT, 1500, SIDE.SELL);
-  await increaseTime(1);
-  await dex.connect(trader1).createLimitOrder(BAT, 2000, 12, SIDE.BUY);
-  await increaseTime(1);
-  await dex.connect(trader2).createMarketOrder(BAT, 2000, SIDE.SELL);
+  await cLO(trader1, BAT, 1000, 10, SIDE.BUY);
+  await cMO(trader2, BAT, 1000, SIDE.SELL);
 
-  /*
-  await dex.connect(trader1).createLimitOrder(REP, 1000, 2, SIDE.BUY);
-  await increaseTime(1);
-  await dex.connect(trader2).createMarketOrder(REP, 1000, SIDE.SELL);
-  await increaseTime(1);
-  await dex.connect(trader1).createLimitOrder(REP, 500, 4, SIDE.BUY);
-  await increaseTime(1);
-  await dex.connect(trader2).createMarketOrder(REP, 500, SIDE.SELL);
-  await increaseTime(1);
-  await dex.connect(trader1).createLimitOrder(REP, 800, 2, SIDE.BUY);
-  await increaseTime(1);
-  await dex.connect(trader2).createMarketOrder(REP, 800, SIDE.SELL);
-  await increaseTime(1);
-  await dex.connect(trader1).createLimitOrder(REP, 1200, 6, SIDE.BUY);
-  await increaseTime(1);
-  await dex.connect(trader2).createMarketOrder(REP, 1200, SIDE.SELL);
-  */
+  await cLO(trader1, BAT, 1200, 11, SIDE.BUY);
+  await cMO(trader2, BAT, 1200, SIDE.SELL);
+
+  await cLO(trader1, BAT, 1200, 15, SIDE.BUY);
+  await cMO(trader2, BAT, 1200, SIDE.SELL);
+
+  await cLO(trader1, BAT, 1500, 14, SIDE.BUY);
+  await cMO(trader2, BAT, 1500, SIDE.SELL);
+
+  await cLO(trader1, REP, 1000, 4, SIDE.BUY);
+  await cMO(trader2, REP, 1000, SIDE.SELL);
+
+  await cLO(trader1, REP, 1200, 5, SIDE.BUY);
+  await cMO(trader2, REP, 1200, SIDE.SELL);
+
+  await cLO(trader1, REP, 1200, 6, SIDE.BUY);
+  await cMO(trader2, REP, 1200, SIDE.SELL);
+
+  await cLO(trader1, REP, 1500, 5, SIDE.BUY);
+  await cMO(trader2, REP, 1500, SIDE.SELL);
+
+  await cLO(trader1, ZRX, 500, 12, SIDE.BUY);
+  await cMO(trader2, REP, 500, SIDE.SELL);
+
+  await cLO(trader1, ZRX, 1000, 13, SIDE.BUY);
+  await cMO(trader2, REP, 1000, SIDE.SELL);
 
   //create orders
   console.log("Creating limit orders")
-  await dex.connect(trader1).createLimitOrder(BAT, 1400, 10, SIDE.BUY)
-  await dex.connect(trader2).createLimitOrder(BAT, 1200, 11, SIDE.BUY)
-  await dex.connect(trader2).createLimitOrder(BAT, 1000, 12, SIDE.BUY)
+  await cLO(trader1, BAT, 1400, 10, SIDE.BUY);
+  await cLO(trader2, BAT, 1200, 11, SIDE.BUY);
+  await cLO(trader2, BAT, 1000, 12, SIDE.BUY);
 
-  await dex.connect(trader1).createLimitOrder(REP, 3000, 4, SIDE.BUY)
-  await dex.connect(trader1).createLimitOrder(REP, 2000, 5, SIDE.BUY)
-  await dex.connect(trader2).createLimitOrder(REP, 500, 6, SIDE.BUY)
+  await cLO(trader1, REP, 3000, 4, SIDE.BUY);
+  await cLO(trader1, REP, 2000, 5, SIDE.BUY);
+  await cLO(trader2, REP, 500, 6, SIDE.BUY);
 
-  await dex.connect(trader1).createLimitOrder(ZRX, 4000, 12, SIDE.BUY)
-  await dex.connect(trader1).createLimitOrder(ZRX, 3000, 13, SIDE.BUY)
-  await dex.connect(trader2).createLimitOrder(ZRX, 500, 14, SIDE.BUY)
+  await cLO(trader1, ZRX, 3000, 12, SIDE.BUY);
+  await cLO(trader1, ZRX, 2000, 13, SIDE.BUY);
+  await cLO(trader3, ZRX, 500, 14, SIDE.BUY);
 
-  await dex.connect(trader3).createLimitOrder(BAT, 2000, 16, SIDE.SELL)
-  await dex.connect(trader4).createLimitOrder(BAT, 3000, 15, SIDE.SELL)
-  await dex.connect(trader4).createLimitOrder(BAT, 500, 14, SIDE.SELL)
+  await cLO(trader3, BAT, 3000, 16, SIDE.SELL);
+  await cLO(trader2, BAT, 2000, 17, SIDE.SELL);
+  await cLO(trader1, BAT, 500, 14, SIDE.SELL);
 
-  await dex.connect(trader3).createLimitOrder(REP, 4000, 10, SIDE.SELL)
-  await dex.connect(trader3).createLimitOrder(REP, 2000, 9, SIDE.SELL)
-  await dex.connect(trader4).createLimitOrder(REP, 800, 8, SIDE.SELL)
+  await cLO(trader3, REP, 3000, 10, SIDE.SELL);
+  await cLO(trader2, REP, 2000, 7, SIDE.SELL);
+  await cLO(trader1, REP, 500, 9, SIDE.SELL);
 
-  await dex.connect(trader3).createLimitOrder(ZRX, 1500, 23, SIDE.SELL)
-  await dex.connect(trader3).createLimitOrder(ZRX, 1200, 22, SIDE.SELL)
-  await dex.connect(trader4).createLimitOrder(ZRX, 900, 21, SIDE.SELL)
+  await cLO(trader3, ZRX, 3000, 16, SIDE.SELL);
+  await cLO(trader2, ZRX, 2000, 17, SIDE.SELL);
+  await cLO(trader1, ZRX, 500, 21, SIDE.SELL);
+
   console.log("Done!")
 
 }
