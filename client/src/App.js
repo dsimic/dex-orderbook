@@ -48,8 +48,22 @@ function App({ web3, accounts, contracts, initBlock }) {
     return { buy: orders[0], sell: orders[1] }
   };
 
+  const tradeIds = new Set();
+  const onNewTrade = (tradeIds, newTrade) => {
+    if (tradeIds.has(newTrade.tradeId)) return;
+    tradeIds.add(newTrade.tradeId);
+    setTrades([newTrade, ...trades].sort((a, b) => b.tradeId - a.tradeId));
+  };
+
+
+
+  const getTrades = async (token) => {
+    let recentTrades = await contracts.dex.methods.getRecentTrades(web3.utils.fromAscii(token.ticker)).call();
+    trades.forEach(el => tradeIds.add(el.tradeId));
+    recentTrades.forEach(el => onNewTrade(tradeIds, el))
+  }
+
   const listenToTrades = async token => {
-    const tradeIds = new Set();
     const fromBlock = Math.max(0, initBlock - 100);
     console.log("Getting recent trades")
     let recentTrades = await contracts.dex.methods.getRecentTrades(web3.utils.fromAscii(token.ticker)).call();
@@ -118,6 +132,7 @@ function App({ web3, accounts, contracts, initBlock }) {
     ).send({ from: user.accounts[0] });
     console.log(`Market order successfully submitted.`);
     const orders = await getOrders(user.selectedToken);
+    const trades = await getTrades(user.selectedToken);
     setOrders(orders);
   };
   const createLimitOrder = async (amount, price, side) => {

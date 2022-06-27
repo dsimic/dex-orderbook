@@ -89,7 +89,7 @@ async function main() {
       await delay(seconds * 1000)
     }
   }
-  const waitTx = false;
+  const waitTx = true;
 
   const cMO = async (trader, ticker, amount, side) => {
     let tx = await dex.connect(trader).createMarketOrder(ticker, amount, side);
