@@ -1,5 +1,7 @@
 const { ethers, network: hre_network } = require('hardhat');
 
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
 
 const SIDE = {
   BUY: 0,
@@ -90,7 +92,9 @@ async function main() {
     if (["hardhat", "localhost"].includes(hre_network.name)) {
       await ethers.provider.send("evm_increaseTime", [seconds]);
       await ethers.provider.send("evm_mine");
-    } else { }
+    } else {   // we are probably in a mainnet or testnet where time is real.
+      await delay(seconds * 1000)
+    }
   }
   //create trades
   await dex.connect(trader1).createLimitOrder(BAT, 1000, 10, SIDE.BUY);
