@@ -9,7 +9,7 @@ function LoadingContainer() {
     const [web3, setWeb3] = useState(undefined);
     const [accounts, setAccounts] = useState([]);
     const [contracts, setContracts] = useState(undefined);
-    const [startBlockNumber, setStartBlockNumber] = useState(0);
+    const [startBlockNumber, setStartBlockNumber] = useState(-1);
 
     useEffect(() => {
         const init = async () => {
