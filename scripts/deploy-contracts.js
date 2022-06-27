@@ -1,4 +1,4 @@
-const { ethers } = require('hardhat');
+const { ethers, network: hre_network } = require('hardhat');
 
 
 const SIDE = {
@@ -9,6 +9,7 @@ const [DAI, BAT, REP, ZRX] = ['DAI', 'BAT', 'REP', 'ZRX'].map(el => ethers.utils
 
 async function main() {
   const [account, trader1, trader2, trader3, trader4] = await ethers.getSigners();
+  console.log("Running on network: ", hre_network.name);
   const Dex = await ethers.getContractFactory("Dex");
   const Dai = await ethers.getContractFactory('Dai');
   const Bat = await ethers.getContractFactory('Bat');
@@ -86,8 +87,10 @@ async function main() {
   await seedTokenBalance(zrx, trader4);
 
   const increaseTime = async (seconds) => {
-    await ethers.provider.send("evm_increaseTime", [seconds]);
-    await ethers.provider.send("evm_mine");
+    if (["hardhat", "localhost"].includes(hre_network.name)) {
+      await ethers.provider.send("evm_increaseTime", [seconds]);
+      await ethers.provider.send("evm_mine");
+    } else { }
   }
   //create trades
   await dex.connect(trader1).createLimitOrder(BAT, 1000, 10, SIDE.BUY);

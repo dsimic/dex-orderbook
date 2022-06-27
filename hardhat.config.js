@@ -23,6 +23,8 @@ module.exports = {
   networks: {
     mumbai: {
       url: process.env.MUMBAI_URL,
+      gas: 2100000,
+      gasPrice: 8000000000,
       accounts: [
         process.env.PRIVATE_KEY,
         process.env.TRADER_1_KEY,
@@ -30,6 +32,6 @@ module.exports = {
         process.env.TRADER_3_KEY,
         process.env.TRADER_4_KEY,
       ]
-    }
+    },
   }
 };
