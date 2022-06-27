@@ -57,6 +57,7 @@ function App({ web3, accounts, contracts, initBlock }) {
       fromBlock: web3.utils.toHex(fromBlock),
       // fromBlock: 'earliest',
     }).on('data', newTrade => {
+      console.log("Got newTrade:", newTrade);
       if (tradeIds.has(newTrade.returnValues.tradeId)) return;
       tradeIds.add(newTrade.returnValues.tradeId);
       setTrades(trades => ([...trades, newTrade.returnValues]));
